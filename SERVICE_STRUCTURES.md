@@ -1,4 +1,4 @@
-# 📁 INDIVIDUAL SERVICE FOLDER STRUCTURES
+# 📁 SIMPLIFIED SERVICE STRUCTURES
 
 ## 🔐 **AUTH-SERVICE** (Repository: auth-service)
 
@@ -8,11 +8,6 @@ auth-service/
 │   ├── main/
 │   │   ├── java/com/platform/auth/
 │   │   │   ├── AuthServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── SecurityConfig.java
-│   │   │   │   ├── RedisConfig.java
-│   │   │   │   ├── JwtConfig.java
-│   │   │   │   └── OAuth2Config.java
 │   │   │   ├── controller/
 │   │   │   │   ├── AuthController.java
 │   │   │   │   ├── OAuth2Controller.java
@@ -38,18 +33,12 @@ auth-service/
 │   │   │   ├── grpc/
 │   │   │   │   ├── AuthGrpcService.java
 │   │   │   │   └── TokenValidationService.java
-│   │   │   ├── security/
-│   │   │   │   ├── JwtAuthenticationFilter.java
-│   │   │   │   ├── JwtTokenProvider.java
-│   │   │   │   └── CustomUserDetailsService.java
 │   │   │   └── exception/
 │   │   │       ├── AuthException.java
 │   │   │       ├── TokenExpiredException.java
 │   │   │       └── InvalidCredentialsException.java
 │   │   └── resources/
 │   │       ├── application.yml
-│   │       ├── application-dev.yml
-│   │       ├── application-prod.yml
 │   │       └── db/migration/
 │   │           ├── V1__Create_users_table.sql
 │   │           ├── V2__Create_roles_table.sql
@@ -60,24 +49,36 @@ auth-service/
 │           ├── controller/
 │           ├── service/
 │           └── integration/
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
-├── k8s/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
 │   ├── deployment.yaml
 │   ├── service.yaml
-│   ├── configmap.yaml
-│   └── secret.yaml
-├── helm/
-│   ├── Chart.yaml
-│   ├── values.yaml
-│   └── templates/
+│   └── configmap.yaml
+├── .dockerignore
 ├── .gitignore
-├── pom.xml
-├── README.md
-└── docs/
-    ├── API.md
-    └── DEPLOYMENT.md
+├── pom.xml                             # Includes platform-contracts dependency
+└── README.md
+```
+
+**📦 pom.xml includes:**
+```xml
+<dependency>
+    <groupId>com.platform</groupId>
+    <artifactId>platform-contracts</artifactId>
+    <version>${contracts.version}</version>
+</dependency>
+```
+
+**🐳 Dockerfile example:**
+```dockerfile
+FROM openjdk:17-jdk-slim
+RUN apt-get update && apt-get install -y redis-tools && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY target/*.jar app.jar
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8080/actuator/health || exit 1
+ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
 ---
@@ -90,11 +91,6 @@ user-service/
 │   ├── main/
 │   │   ├── java/com/platform/user/
 │   │   │   ├── UserServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── DatabaseConfig.java
-│   │   │   │   ├── RedisConfig.java
-│   │   │   │   ├── ElasticsearchConfig.java
-│   │   │   │   └── KafkaConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── UserController.java
 │   │   │   │   ├── ProfileController.java
@@ -125,19 +121,20 @@ user-service/
 │   │   │   ├── grpc/
 │   │   │   │   ├── UserGrpcService.java
 │   │   │   │   └── UserValidationService.java
-│   │   │   ├── kafka/
-│   │   │   │   ├── UserEventProducer.java
-│   │   │   │   └── UserEventConsumer.java
-│   │   │   └── cache/
-│   │   │       ├── UserCacheService.java
-│   │   │       └── LeaderboardCacheService.java
+│   │   │   └── kafka/
+│   │   │       ├── UserEventProducer.java
+│   │   │       └── UserEventConsumer.java
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
@@ -152,11 +149,6 @@ problem-service/
 │   ├── main/
 │   │   ├── java/com/platform/problem/
 │   │   │   ├── ProblemServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── DatabaseConfig.java
-│   │   │   │   ├── ElasticsearchConfig.java
-│   │   │   │   ├── RedisConfig.java
-│   │   │   │   └── SecurityConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── ProblemController.java
 │   │   │   │   ├── CategoryController.java
@@ -185,25 +177,22 @@ problem-service/
 │   │   │   │   ├── ProblemCreateDto.java
 │   │   │   │   ├── ProblemUpdateDto.java
 │   │   │   │   └── SearchResultDto.java
-│   │   │   ├── grpc/
-│   │   │   │   ├── ProblemGrpcService.java
-│   │   │   │   └── ProblemValidationService.java
-│   │   │   ├── search/
-│   │   │   │   ├── ProblemIndexer.java
-│   │   │   │   ├── SearchQueryBuilder.java
-│   │   │   │   └── SearchResultMapper.java
-│   │   │   └── cache/
-│   │   │       ├── ProblemCacheService.java
-│   │   │       └── SearchCacheService.java
+│   │   │   └── grpc/
+│   │   │       ├── ProblemGrpcService.java
+│   │   │       └── ProblemValidationService.java
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       ├── elasticsearch/
 │   │       │   └── problem-mapping.json
 │   │       └── db/migration/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
@@ -218,10 +207,6 @@ testcase-service/
 │   ├── main/
 │   │   ├── java/com/platform/testcase/
 │   │   │   ├── TestcaseServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── DatabaseConfig.java
-│   │   │   │   ├── EncryptionConfig.java
-│   │   │   │   └── SecurityConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── TestcaseController.java
 │   │   │   │   ├── SampleTestcaseController.java
@@ -244,23 +229,20 @@ testcase-service/
 │   │   │   │   ├── TestcaseCreateDto.java
 │   │   │   │   ├── SampleTestcaseDto.java
 │   │   │   │   └── ValidationResultDto.java
-│   │   │   ├── grpc/
-│   │   │   │   ├── TestcaseGrpcService.java
-│   │   │   │   └── TestcaseValidationService.java
-│   │   │   ├── security/
-│   │   │   │   ├── TestcaseEncryption.java
-│   │   │   │   └── AccessControlService.java
-│   │   │   └── validator/
-│   │   │       ├── InputValidator.java
-│   │   │       ├── OutputValidator.java
-│   │   │       └── FormatValidator.java
+│   │   │   └── grpc/
+│   │   │       ├── TestcaseGrpcService.java
+│   │   │       └── TestcaseValidationService.java
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
@@ -275,11 +257,6 @@ submission-service/
 │   ├── main/
 │   │   ├── java/com/platform/submission/
 │   │   │   ├── SubmissionServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── DatabaseConfig.java
-│   │   │   │   ├── KafkaConfig.java
-│   │   │   │   ├── RedisConfig.java
-│   │   │   │   └── WebSocketConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── SubmissionController.java
 │   │   │   │   ├── SubmissionHistoryController.java
@@ -307,22 +284,20 @@ submission-service/
 │   │   │   │   ├── SubmissionEventProducer.java
 │   │   │   │   ├── BuildEventConsumer.java
 │   │   │   │   └── ExecutionEventConsumer.java
-│   │   │   ├── websocket/
-│   │   │   │   ├── SubmissionStatusHandler.java
-│   │   │   │   └── WebSocketEventPublisher.java
-│   │   │   ├── grpc/
-│   │   │   │   └── SubmissionGrpcService.java
-│   │   │   └── validator/
-│   │   │       ├── CodeValidator.java
-│   │   │       ├── LanguageValidator.java
-│   │   │       └── SubmissionValidator.java
+│   │   │   └── websocket/
+│   │   │       ├── SubmissionStatusHandler.java
+│   │   │       └── WebSocketEventPublisher.java
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
@@ -337,11 +312,6 @@ build-service/
 │   ├── main/
 │   │   ├── java/com/platform/build/
 │   │   │   ├── BuildServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── DockerConfig.java
-│   │   │   │   ├── KafkaConfig.java
-│   │   │   │   ├── RedisConfig.java
-│   │   │   │   └── ResourceConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── BuildController.java
 │   │   │   │   ├── BuildHistoryController.java
@@ -350,7 +320,6 @@ build-service/
 │   │   │   │   ├── BuildService.java
 │   │   │   │   ├── CompilerService.java
 │   │   │   │   ├── DockerService.java
-│   │   │   │   ├── CacheService.java
 │   │   │   │   └── ResourceMonitoringService.java
 │   │   │   ├── repository/
 │   │   │   │   ├── BuildRepository.java
@@ -369,31 +338,23 @@ build-service/
 │   │   │   ├── kafka/
 │   │   │   │   ├── SubmissionEventConsumer.java
 │   │   │   │   └── BuildEventProducer.java
-│   │   │   ├── compiler/
-│   │   │   │   ├── JavaCompiler.java
-│   │   │   │   ├── PythonCompiler.java
-│   │   │   │   ├── CppCompiler.java
-│   │   │   │   ├── JavaScriptRunner.java
-│   │   │   │   └── CompilerFactory.java
-│   │   │   ├── docker/
-│   │   │   │   ├── DockerManager.java
-│   │   │   │   ├── ContainerBuilder.java
-│   │   │   │   └── ImageManager.java
-│   │   │   └── monitoring/
-│   │   │       ├── ResourceMonitor.java
-│   │   │       └── BuildMetrics.java
+│   │   │   └── compiler/
+│   │   │       ├── JavaCompiler.java
+│   │   │       ├── PythonCompiler.java
+│   │   │       ├── CppCompiler.java
+│   │   │       ├── JavaScriptRunner.java
+│   │   │       └── CompilerFactory.java
 │   │   └── resources/
 │   │       ├── application.yml
-│   │       ├── docker-templates/
-│   │       │   ├── java.dockerfile
-│   │       │   ├── python.dockerfile
-│   │       │   ├── cpp.dockerfile
-│   │       │   └── javascript.dockerfile
 │   │       └── compiler-configs/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
@@ -408,11 +369,6 @@ execution-service/
 │   ├── main/
 │   │   ├── java/com/platform/execution/
 │   │   │   ├── ExecutionServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── SandboxConfig.java
-│   │   │   │   ├── KafkaConfig.java
-│   │   │   │   ├── RedisConfig.java
-│   │   │   │   └── SecurityConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── ExecutionController.java
 │   │   │   │   ├── ExecutionHistoryController.java
@@ -444,27 +400,22 @@ execution-service/
 │   │   │   ├── sandbox/
 │   │   │   │   ├── DockerSandbox.java
 │   │   │   │   ├── ContainerManager.java
-│   │   │   │   ├── SecurityPolicy.java
-│   │   │   │   └── ResourceLimiter.java
-│   │   │   ├── executor/
-│   │   │   │   ├── CodeExecutor.java
-│   │   │   │   ├── TestCaseRunner.java
-│   │   │   │   └── ResultAnalyzer.java
-│   │   │   └── monitoring/
-│   │   │       ├── ResourceMonitor.java
-│   │   │       ├── PerformanceTracker.java
-│   │   │       └── ExecutionMetrics.java
+│   │   │   │   └── SecurityPolicy.java
+│   │   │   └── executor/
+│   │   │       ├── CodeExecutor.java
+│   │   │       ├── TestCaseRunner.java
+│   │   │       └── ResultAnalyzer.java
 │   │   └── resources/
 │   │       ├── application.yml
-│   │       ├── sandbox-policies/
-│   │       │   ├── java-policy.yml
-│   │       │   ├── python-policy.yml
-│   │       │   └── cpp-policy.yml
-│   │       └── resource-limits/
+│   │       └── sandbox-policies/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
@@ -479,11 +430,6 @@ contest-service/
 │   ├── main/
 │   │   ├── java/com/platform/contest/
 │   │   │   ├── ContestServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── DatabaseConfig.java
-│   │   │   │   ├── RedisConfig.java
-│   │   │   │   ├── WebSocketConfig.java
-│   │   │   │   └── SchedulingConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── ContestController.java
 │   │   │   │   ├── LeaderboardController.java
@@ -518,10 +464,6 @@ contest-service/
 │   │   │   │   └── WebSocketEventPublisher.java
 │   │   │   ├── grpc/
 │   │   │   │   └── ContestGrpcService.java
-│   │   │   ├── scheduling/
-│   │   │   │   ├── ContestScheduler.java
-│   │   │   │   ├── ContestStartTask.java
-│   │   │   │   └── ContestEndTask.java
 │   │   │   └── scoring/
 │   │   │       ├── ScoringAlgorithm.java
 │   │   │       ├── ICPCScoring.java
@@ -530,9 +472,13 @@ contest-service/
 │   │       ├── application.yml
 │   │       └── db/migration/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
@@ -547,12 +493,6 @@ notification-service/
 │   ├── main/
 │   │   ├── java/com/platform/notification/
 │   │   │   ├── NotificationServiceApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── EmailConfig.java
-│   │   │   │   ├── SmsConfig.java
-│   │   │   │   ├── RabbitMQConfig.java
-│   │   │   │   ├── WebSocketConfig.java
-│   │   │   │   └── TemplateConfig.java
 │   │   │   ├── controller/
 │   │   │   │   ├── NotificationController.java
 │   │   │   │   ├── TemplateController.java
@@ -586,10 +526,6 @@ notification-service/
 │   │   │   │   ├── SmsProvider.java
 │   │   │   │   ├── PushProvider.java
 │   │   │   │   └── WebSocketProvider.java
-│   │   │   ├── template/
-│   │   │   │   ├── TemplateEngine.java
-│   │   │   │   ├── TemplateProcessor.java
-│   │   │   │   └── TemplateValidator.java
 │   │   │   └── websocket/
 │   │   │       ├── NotificationWebSocketHandler.java
 │   │   │       └── WebSocketNotificationPublisher.java
@@ -601,396 +537,305 @@ notification-service/
 │   │       │   └── push/
 │   │       └── db/migration/
 │   └── test/
-├── docker/
-├── k8s/
-├── helm/
+├── Dockerfile                           # Service-specific Dockerfile
+├── docker-compose.yml                  # Local development setup
+├── k8s/                                # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── .dockerignore
 ├── pom.xml
 └── README.md
 ```
 
 ---
 
-## 📋 **SHARED-CONTRACTS** (Repository: shared-contracts)
-
-```
-shared-contracts/
-├── proto/
-│   ├── auth/
-│   │   ├── auth.proto
-│   │   └── token.proto
-│   ├── user/
-│   │   ├── user.proto
-│   │   └── profile.proto
-│   ├── problem/
-│   │   ├── problem.proto
-│   │   └── search.proto
-│   ├── testcase/
-│   │   └── testcase.proto
-│   ├── submission/
-│   │   └── submission.proto
-│   ├── build/
-│   │   └── build.proto
-│   ├── execution/
-│   │   └── execution.proto
-│   ├── contest/
-│   │   └── contest.proto
-│   └── notification/
-│       └── notification.proto
-├── java/
-│   └── generated/
-├── common/
-│   ├── error-codes.proto
-│   ├── pagination.proto
-│   └── metadata.proto
-├── scripts/
-│   ├── generate-java.sh
-│   ├── generate-python.sh
-│   └── build.gradle
-├── README.md
-└── build.gradle
-```
-
----
-
 ## 🏗️ **PLATFORM-INFRASTRUCTURE** (Repository: platform-infrastructure)
+### **🎯 SINGLE SOURCE OF TRUTH FOR SHARED COMPONENTS & CONTRACTS**
 
 ```
 platform-infrastructure/
-├── docker/
-│   ├── local-development/
-│   │   ├── docker-compose.yml              # Complete local stack
-│   │   ├── docker-compose.override.yml     # Development overrides
-│   │   ├── docker-compose.monitoring.yml   # Monitoring stack
-│   │   ├── .env.example                    # Environment template
-│   │   └── init-scripts/
-│   │       ├── postgres-init.sql
-│   │       ├── mongodb-init.js
-│   │       ├── kafka-topics.sh
-│   │       └── elasticsearch-indices.sh
-│   ├── production/
-│   │   └── docker-compose.prod.yml
-│   └── infrastructure/
-│       ├── api-gateway/
-│       │   ├── kong/
-│       │   │   ├── Dockerfile
-│       │   │   ├── kong.yml
-│       │   │   └── plugins/
-│       │   └── nginx/
-│       │       ├── Dockerfile
-│       │       ├── nginx.conf
-│       │       └── conf.d/
-│       ├── databases/
-│       │   ├── postgres/
-│       │   │   ├── Dockerfile
-│       │   │   ├── init.sql
-│       │   │   └── postgresql.conf
-│       │   ├── mongodb/
-│       │   │   ├── Dockerfile
-│       │   │   ├── init.js
-│       │   │   └── mongod.conf
-│       │   ├── redis/
-│       │   │   ├── Dockerfile
-│       │   │   ├── redis.conf
-│       │   │   └── sentinel.conf
-│       │   └── elasticsearch/
-│       │       ├── Dockerfile
-│       │       ├── elasticsearch.yml
-│       │       └── jvm.options
-│       ├── messaging/
-│       │   ├── kafka/
-│       │   │   ├── Dockerfile
-│       │   │   ├── server.properties
-│       │   │   └── topics/
-│       │   ├── zookeeper/
-│       │   │   ├── Dockerfile
-│       │   │   └── zoo.cfg
-│       │   └── rabbitmq/
-│       │       ├── Dockerfile
-│       │       ├── rabbitmq.conf
-│       │       └── definitions.json
-│       └── reverse-proxy/
-│           ├── haproxy/
-│           │   ├── Dockerfile
-│           │   └── haproxy.cfg
-│           └── nginx/
-│               ├── Dockerfile
-│               └── nginx.conf
-├── kubernetes/
-│   ├── local/                             # Local K8s cluster configs
-│   │   ├── namespaces/
-│   │   │   ├── development.yaml
-│   │   │   ├── monitoring.yaml
-│   │   │   └── infrastructure.yaml
-│   │   ├── storage/
-│   │   │   ├── postgres-pv.yaml
-│   │   │   ├── mongodb-pv.yaml
-│   │   │   ├── redis-pv.yaml
-│   │   │   └── elasticsearch-pv.yaml
-│   │   ├── infrastructure/
-│   │   │   ├── postgres-deployment.yaml
-│   │   │   ├── mongodb-deployment.yaml
-│   │   │   ├── redis-deployment.yaml
-│   │   │   ├── elasticsearch-deployment.yaml
-│   │   │   ├── kafka-deployment.yaml
-│   │   │   ├── zookeeper-deployment.yaml
-│   │   │   ├── rabbitmq-deployment.yaml
-│   │   │   ├── kong-deployment.yaml
-│   │   │   └── haproxy-deployment.yaml
-│   │   ├── services/
-│   │   │   ├── auth-service.yaml
-│   │   │   ├── user-service.yaml
-│   │   │   ├── problem-service.yaml
-│   │   │   ├── testcase-service.yaml
-│   │   │   ├── submission-service.yaml
-│   │   │   ├── build-service.yaml
-│   │   │   ├── execution-service.yaml
-│   │   │   ├── contest-service.yaml
-│   │   │   └── notification-service.yaml
-│   │   ├── configmaps/
-│   │   │   ├── database-configs.yaml
-│   │   │   ├── messaging-configs.yaml
-│   │   │   ├── api-gateway-configs.yaml
-│   │   │   └── monitoring-configs.yaml
-│   │   ├── secrets/
-│   │   │   ├── database-secrets.yaml
-│   │   │   ├── jwt-secrets.yaml
-│   │   │   └── messaging-secrets.yaml
-│   │   ├── ingress/
-│   │   │   ├── api-ingress.yaml
-│   │   │   ├── monitoring-ingress.yaml
-│   │   │   └── admin-ingress.yaml
-│   │   └── monitoring/
-│   │       ├── prometheus-deployment.yaml
-│   │       ├── grafana-deployment.yaml
-│   │       ├── jaeger-deployment.yaml
-│   │       └── alertmanager-deployment.yaml
-│   └── gcp/                               # GCP GKE configs
-│       ├── gke-cluster.yaml
-│       ├── node-pools.yaml
-│       ├── workload-identity.yaml
-│       └── cloud-sql-proxy.yaml
-├── helm/
-│   ├── infrastructure/                    # Infrastructure Helm charts
-│   │   ├── api-gateway/
-│   │   │   ├── kong/
-│   │   │   │   ├── Chart.yaml
-│   │   │   │   ├── values.yaml
-│   │   │   │   ├── values-local.yaml
-│   │   │   │   ├── values-gcp.yaml
-│   │   │   │   └── templates/
-│   │   │   └── nginx/
-│   │   │       ├── Chart.yaml
-│   │   │       ├── values.yaml
-│   │   │       └── templates/
-│   │   ├── databases/
-│   │   │   ├── postgresql/
-│   │   │   │   ├── Chart.yaml
-│   │   │   │   ├── values-local.yaml
-│   │   │   │   ├── values-gcp.yaml
-│   │   │   │   └── templates/
-│   │   │   ├── mongodb/
-│   │   │   ├── redis/
-│   │   │   └── elasticsearch/
-│   │   ├── messaging/
-│   │   │   ├── kafka/
-│   │   │   │   ├── Chart.yaml
-│   │   │   │   ├── values-local.yaml
-│   │   │   │   ├── values-gcp.yaml
-│   │   │   │   └── templates/
-│   │   │   └── rabbitmq/
-│   │   │       ├── Chart.yaml
-│   │   │       ├── values.yaml
-│   │   │       └── templates/
-│   │   └── reverse-proxy/
-│   │       ├── haproxy/
-│   │       └── nginx/
-│   ├── monitoring/                        # Monitoring stack
-│   │   ├── prometheus/
-│   │   │   ├── Chart.yaml
-│   │   │   ├── values-local.yaml
-│   │   │   ├── values-gcp.yaml
-│   │   │   └── templates/
-│   │   ├── grafana/
-│   │   │   ├── Chart.yaml
-│   │   │   ├── values-local.yaml
-│   │   │   ├── values-gcp.yaml
-│   │   │   └── templates/
-│   │   │       ├── dashboards/
-│   │   │       └── datasources/
-│   │   ├── jaeger/
-│   │   └── alertmanager/
-│   └── environments/                      # Environment umbrella charts
-│       ├── local-development/
-│       │   ├── Chart.yaml
-│       │   ├── values.yaml
-│       │   ├── requirements.yaml
-│       │   └── templates/
-│       ├── local-k8s/
-│       │   ├── Chart.yaml
-│       │   ├── values.yaml
-│       │   └── requirements.yaml
-│       ├── gcp-dev/
-│       └── gcp-prod/
-├── terraform/
-│   ├── local/
-│   │   ├── k8s-cluster/
-│   │   │   ├── main.tf
-│   │   │   ├── variables.tf
-│   │   │   └── outputs.tf
-│   │   └── docker-registry/
-│   ├── gcp/
-│   │   ├── gke/
-│   │   │   ├── main.tf
-│   │   │   ├── variables.tf
-│   │   │   ├── versions.tf
-│   │   │   └── outputs.tf
-│   │   ├── databases/
-│   │   │   ├── cloud-sql.tf
-│   │   │   ├── memorystore.tf
-│   │   │   └── firestore.tf
-│   │   ├── networking/
-│   │   │   ├── vpc.tf
-│   │   │   ├── subnets.tf
-│   │   │   ├── firewall.tf
-│   │   │   └── load-balancer.tf
-│   │   ├── storage/
-│   │   │   ├── gcs.tf
-│   │   │   └── persistent-disks.tf
-│   │   └── messaging/
-│   │       ├── pub-sub.tf
-│   │       └── cloud-tasks.tf
-│   └── modules/
-│       ├── gke-cluster/
-│       ├── cloud-sql/
-│       ├── vpc-network/
-│       └── monitoring/
-├── ci-cd/
-│   ├── local/                            # Local CI/CD setup
-│   │   ├── jenkins/
-│   │   │   ├── Dockerfile
-│   │   │   ├── jenkins.yaml
-│   │   │   ├── plugins.txt
-│   │   │   └── jobs/
-│   │   │       ├── build-auth-service.xml
-│   │   │       ├── build-user-service.xml
-│   │   │       ├── build-problem-service.xml
-│   │   │       ├── build-testcase-service.xml
-│   │   │       ├── build-submission-service.xml
-│   │   │       ├── build-build-service.xml
-│   │   │       ├── build-execution-service.xml
-│   │   │       ├── build-contest-service.xml
-│   │   │       ├── build-notification-service.xml
-│   │   │       └── deploy-to-k8s.xml
-│   │   ├── gitlab-runner/
-│   │   │   ├── docker-compose.yml
-│   │   │   ├── config.toml
-│   │   │   └── gitlab-ci-templates/
-│   │   └── tekton/
-│   │       ├── pipelines/
-│   │       ├── tasks/
-│   │       ├── triggers/
-│   │       └── resources/
-│   ├── github-actions/
-│   │   ├── workflows/
-│   │   │   ├── build-and-test.yml
-│   │   │   ├── deploy-local.yml
-│   │   │   └── deploy-gcp.yml
-│   │   └── composite-actions/
-│   └── templates/
-│       ├── Jenkinsfile.template
-│       ├── gitlab-ci.template.yml
-│       └── github-workflow.template.yml
-├── scripts/
-│   ├── local-setup/
-│   │   ├── setup-docker.ps1              # PowerShell scripts for Windows
-│   │   ├── setup-k8s.ps1                 # Kind/Minikube setup
-│   │   ├── setup-registry.ps1            # Local Docker registry
-│   │   ├── setup-jenkins.ps1             # Jenkins CI/CD setup
-│   │   ├── build-all-services.ps1        # Build all microservices
-│   │   ├── deploy-infrastructure.ps1     # Deploy infrastructure
-│   │   ├── deploy-services.ps1           # Deploy microservices
-│   │   └── setup-monitoring.ps1          # Setup monitoring stack
-│   ├── gcp-setup/
-│   │   ├── setup-gke.ps1
-│   │   ├── setup-databases.ps1
-│   │   └── migrate-to-gcp.ps1
-│   ├── development/
-│   │   ├── start-local-env.ps1
-│   │   ├── stop-local-env.ps1
-│   │   ├── reset-databases.ps1
-│   │   └── run-tests.ps1
-│   └── utilities/
-│       ├── health-check.ps1
-│       ├── logs-collector.ps1
-│       ├── backup-data.ps1
-│       └── performance-test.ps1
-├── monitoring/
+├── services/                             # Git submodules (complete service repositories)
+│   ├── auth-service/                     # Submodule -> https://github.com/your-org/auth-service.git
+│   │   ├── src/
+│   │   ├── Dockerfile
+│   │   ├── k8s/
+│   │   └── pom.xml
+│   ├── user-service/                     # Submodule -> https://github.com/your-org/user-service.git
+│   │   ├── src/
+│   │   ├── Dockerfile
+│   │   ├── k8s/
+│   │   └── pom.xml
+│   ├── problem-service/                  # Submodule -> https://github.com/your-org/problem-service.git
+│   ├── testcase-service/                 # Submodule -> https://github.com/your-org/testcase-service.git
+│   ├── submission-service/               # Submodule -> https://github.com/your-org/submission-service.git
+│   ├── build-service/                    # Submodule -> https://github.com/your-org/build-service.git
+│   ├── execution-service/                # Submodule -> https://github.com/your-org/execution-service.git
+│   ├── contest-service/                  # Submodule -> https://github.com/your-org/contest-service.git
+│   └── notification-service/             # Submodule -> https://github.com/your-org/notification-service.git
+├── shared-contracts/                     # gRPC contracts and API definitions
+│   ├── proto/
+│   │   ├── auth/
+│   │   │   ├── auth.proto
+│   │   │   └── token.proto
+│   │   ├── user/
+│   │   │   ├── user.proto
+│   │   │   └── profile.proto
+│   │   ├── problem/
+│   │   │   ├── problem.proto
+│   │   │   └── search.proto
+│   │   ├── testcase/
+│   │   │   └── testcase.proto
+│   │   ├── submission/
+│   │   │   └── submission.proto
+│   │   ├── build/
+│   │   │   └── build.proto
+│   │   ├── execution/
+│   │   │   └── execution.proto
+│   │   ├── contest/
+│   │   │   └── contest.proto
+│   │   ├── notification/
+│   │   │   └── notification.proto
+│   │   └── common/
+│   │       ├── error-codes.proto
+│   │       ├── pagination.proto
+│   │       └── metadata.proto
+│   ├── java/
+│   │   └── generated/
+│   ├── scripts/
+│   │   ├── generate-contracts.sh         # Generate Java classes from proto
+│   │   ├── publish-contracts.sh          # Publish to Maven repository
+│   │   └── update-version.sh             # Version management
+│   ├── pom.xml                          # Maven config for publishing contracts
+│   └── README.md
+├── shared-infrastructure/                 # Shared components only
+│   ├── kong/                             # API Gateway
+│   │   ├── Dockerfile
+│   │   ├── k8s/
+│   │   │   ├── deployment.yaml
+│   │   │   ├── service.yaml
+│   │   │   └── configmap.yaml
+│   │   └── config/
+│   │       ├── kong.conf
+│   │       └── plugins/
+│   ├── kafka/                            # Message Broker
+│   │   ├── k8s/
+│   │   │   ├── deployment.yaml
+│   │   │   ├── service.yaml
+│   │   │   └── configmap.yaml
+│   │   └── config/
+│   │       ├── server.properties
+│   │       └── topics.yaml
+│   ├── rabbitmq/                         # Alternative Message Broker
+│   │   ├── k8s/
+│   │   │   ├── deployment.yaml
+│   │   │   ├── service.yaml
+│   │   │   └── configmap.yaml
+│   │   └── config/
+│   │       ├── rabbitmq.conf
+│   │       └── definitions.json
+│   ├── databases/
+│   │   ├── postgres/
+│   │   │   ├── k8s/
+│   │   │   │   ├── deployment.yaml
+│   │   │   │   ├── service.yaml
+│   │   │   │   └── configmap.yaml
+│   │   │   └── init.sql
+│   │   ├── mongodb/
+│   │   │   ├── k8s/
+│   │   │   │   ├── deployment.yaml
+│   │   │   │   ├── service.yaml
+│   │   │   │   └── configmap.yaml
+│   │   │   └── init.js
+│   │   ├── redis/
+│   │   │   ├── k8s/
+│   │   │   │   ├── deployment.yaml
+│   │   │   │   ├── service.yaml
+│   │   │   │   └── configmap.yaml
+│   │   │   └── redis.conf
+│   │   └── elasticsearch/
+│   │       ├── k8s/
+│   │       │   ├── deployment.yaml
+│   │       │   ├── service.yaml
+│   │       │   └── configmap.yaml
+│   │       └── elasticsearch.yml
+│   └── monitoring/
+│       ├── prometheus/
+│       │   ├── k8s/
+│       │   │   ├── deployment.yaml
+│       │   │   ├── service.yaml
+│       │   │   └── configmap.yaml
+│       │   └── config/
+│       ├── grafana/
+│       │   ├── k8s/
+│       │   │   ├── deployment.yaml
+│       │   │   ├── service.yaml
+│       │   │   └── configmap.yaml
+│       │   └── dashboards/
+│       └── jaeger/
+│           ├── k8s/
+│           │   ├── deployment.yaml
+│           │   ├── service.yaml
+│           │   └── configmap.yaml
+│           └── config/
+├── deployment/                           # Orchestration scripts and configs
+│   ├── docker-compose.yml               # Complete stack for local development
+│   └── kubernetes/
+│       ├── namespace.yaml
+│       ├── deploy-infrastructure.yaml   # Deploy shared components first
+│       ├── deploy-services.yaml         # Deploy services second (references service images)
+│       ├── configmap.yaml              # Global configurations
+│       ├── secrets.yaml                # All secrets
+│       └── ingress.yaml                # Single ingress for all services
+├── scripts/                            # Automation scripts
+│   ├── deploy-infrastructure.sh        # Deploy shared components only
+│   ├── deploy-services.sh              # Deploy all services (uses pre-built images)
+│   ├── setup-local.sh                  # Local development setup
+│   ├── teardown.sh                     # Clean shutdown
+│   ├── scale-service.sh                # Scale individual services
+│   ├── auto-scale-all.sh               # Apply auto-scaling to all services
+│   ├── update-service.sh               # Rolling updates
+│   └── backup.sh                       # Data backup
+├── scaling/                            # Centralized scaling configurations
+│   ├── environments/
+│   │   ├── development/
+│   │   │   ├── auth-service-hpa.yaml
+│   │   │   ├── user-service-hpa.yaml
+│   │   │   └── execution-service-hpa.yaml
+│   │   ├── staging/
+│   │   │   ├── auth-service-hpa.yaml
+│   │   │   ├── user-service-hpa.yaml
+│   │   │   └── execution-service-hpa.yaml
+│   │   └── production/
+│   │       ├── auth-service-hpa.yaml
+│   │       ├── user-service-hpa.yaml
+│   │       ├── build-service-hpa.yaml
+│   │       ├── execution-service-hpa.yaml
+│   │       └── contest-service-hpa.yaml
+│   ├── policies/
+│   │   ├── cpu-intensive-services.yaml  # For build/execution services
+│   │   ├── memory-intensive-services.yaml
+│   │   └── burst-capable-services.yaml  # For execution service
+│   ├── global/
+│   │   ├── default-hpa-template.yaml    # GLOBAL HPA template for all services
+│   │   ├── default-resource-limits.yaml # GLOBAL resource limits for all services
+│   │   └── global-scaling-config.yaml   # GLOBAL scaling behavior configuration
+│   └── vertical-scaling/
+│       ├── vpa-auth-service.yaml        # Vertical Pod Autoscaler
+│       ├── vpa-build-service.yaml
+│       └── vpa-execution-service.yaml
+├── config/                              # Centralized configuration
+│   ├── application.yaml                 # Common service config
+│   ├── database-connections.yaml       # Database connection strings
+│   ├── messaging-config.yaml           # Kafka/RMQ endpoints
+│   ├── grpc-endpoints.yaml             # gRPC service discovery
+│   ├── security-config.yaml            # JWT, OAuth configs
+│   ├── monitoring-config.yaml          # Observability settings
+│   └── global-scaling-defaults.yaml    # GLOBAL scaling configuration for all services
+├── monitoring/                         # Observability configurations
 │   ├── prometheus/
-│   │   ├── prometheus.yml
-│   │   ├── alert-rules/
-│   │   │   ├── infrastructure.yml
-│   │   │   ├── applications.yml
-│   │   │   └── performance.yml
-│   │   └── exporters/
+│   │   ├── rules/
+│   │   └── targets.yaml
 │   ├── grafana/
-│   │   ├── provisioning/
-│   │   │   ├── dashboards/
-│   │   │   └── datasources/
 │   │   ├── dashboards/
-│   │   │   ├── infrastructure-dashboard.json
-│   │   │   ├── application-dashboard.json
-│   │   │   ├── kafka-dashboard.json
-│   │   │   ├── database-dashboard.json
-│   │   │   └── grpc-dashboard.json
-│   │   └── plugins/
-│   ├── jaeger/
-│   │   ├── jaeger-config.yml
-│   │   └── sampling-strategies.json
-│   └── alerting/
-│       ├── alertmanager.yml
-│       ├── notification-templates/
-│       └── webhook-configs/
-├── configs/
-│   ├── local/
-│   │   ├── application.yml              # Common config for local
-│   │   ├── database-urls.yml
-│   │   ├── messaging-endpoints.yml
-│   │   └── api-gateway-routes.yml
-│   ├── gcp/
-│   │   ├── application-gcp.yml
-│   │   ├── cloud-endpoints.yml
-│   │   └── workload-identity.yml
-│   └── shared/
-│       ├── grpc-ports.yml
-│       ├── health-check-endpoints.yml
-│       └── service-discovery.yml
-├── documentation/
-│   ├── LOCAL_SETUP.md                   # Complete local setup guide
-│   ├── K8S_DEPLOYMENT.md               # Kubernetes deployment guide
-│   ├── CI_CD_SETUP.md                  # CI/CD pipeline setup
-│   ├── MONITORING.md                   # Monitoring setup and usage
-│   ├── TROUBLESHOOTING.md              # Common issues and solutions
-│   ├── API_GATEWAY.md                  # API Gateway configuration
-│   ├── DATABASE_SETUP.md               # Database configuration
-│   ├── MESSAGING.md                    # Kafka/RabbitMQ setup
-│   └── GCP_MIGRATION.md                # Migration guide to GCP
-├── tests/
-│   ├── integration/
-│   │   ├── docker-compose.test.yml
-│   │   ├── k8s-integration-tests/
-│   │   └── api-gateway-tests/
-│   ├── performance/
-│   │   ├── load-test-configs/
-│   │   ├── stress-test-scenarios/
-│   │   └── benchmark-scripts/
-│   └── e2e/
-│       ├── playwright-tests/
-│       ├── postman-collections/
-│       └── grpc-tests/
+│   │   │   ├── platform-overview.json
+│   │   │   ├── service-metrics.json
+│   │   │   ├── kafka-monitoring.json
+│   │   │   └── grpc-monitoring.json
+│   │   └── provisioning/
+│   └── alerts/
+│       ├── service-alerts.yaml
+│       └── infrastructure-alerts.yaml
+├── docs/
+│   ├── QUICK_START.md                  # Get everything running in 5 minutes
+│   ├── DEPLOYMENT.md                   # How to deploy to K8s
+│   ├── SCALING.md                      # How to scale services
+│   └── TROUBLESHOOTING.md              # Common issues
+├── .env.example                        # Environment variables template
 ├── .gitignore
-├── README.md
-├── ARCHITECTURE.md
-└── CONTRIBUTING.md
+├── README.md                          # Platform documentation
+└── Makefile                           # Simple commands: make deploy-infra, make deploy-services
 ```
 
-This structure provides complete separation of concerns with each microservice in its own repository, while maintaining shared contracts and infrastructure components.
+**🔑 KEY PRINCIPLES (Updated for Standard Approach):**
+- **Service Independence**: Each service owns its Dockerfile, docker-compose.yml, and k8s/ manifests
+- **Platform-Infrastructure Focuses On**: Shared components (databases, message brokers, monitoring)
+- **Deployment Orchestration**: Scripts reference pre-built service images from registries
+- **Contract Management**: Centralized gRPC contracts published as Maven artifacts
+- **Infrastructure Only**: No service-specific build or deployment configs
+- **Standard Industry Practice**: Services are self-contained and independently deployable
+
+---
+
+## 🔄 **HOW SERVICES ACCESS SHARED CONTRACTS:**
+
+### **📦 Maven Artifact Approach (Recommended):**
+
+1. **Platform-Infrastructure publishes contracts:**
+   ```bash
+   cd platform-infrastructure/shared-contracts
+   ./scripts/generate-contracts.sh    # Generate Java from proto
+   ./scripts/publish-contracts.sh     # Publish to Maven repo
+   ```
+
+2. **Services consume contracts via Maven dependency:**
+   ```xml
+   <!-- In service pom.xml -->
+   <dependency>
+       <groupId>com.platform</groupId>
+       <artifactId>platform-contracts</artifactId>
+       <version>1.0.0</version>
+   </dependency>
+   ```
+
+3. **Services import and use:**
+   ```java
+   import com.platform.contracts.auth.AuthServiceGrpc;
+   import com.platform.contracts.user.UserServiceGrpc;
+   ```
+
+---
+
+## 🚀 **DEPLOYMENT WORKFLOW (Standard Industry Approach):**
+
+### **� Service Build & Deploy:**
+```bash
+# Each service builds and deploys independently
+cd auth-service/
+docker build -t auth-service:latest .
+docker push registry.com/auth-service:latest
+kubectl apply -f k8s/
+```
+
+### **🏗️ Infrastructure Setup:**
+```bash
+# Platform-infrastructure manages shared components only
+cd platform-infrastructure/
+./scripts/deploy-infrastructure.sh    # Deploy databases, kafka, etc.
+./scripts/deploy-services.sh          # Reference service images from registry
+```
+
+### **�🔄 Contract Update Workflow:**
+1. **Update contracts** in `platform-infrastructure/shared-contracts/`
+2. **Generate & publish** new version: `./scripts/publish-contracts.sh`
+3. **Update services** to use new version in their `pom.xml`
+4. **Build & deploy services** individually from their repositories
+
+### **🎯 Benefits of Standard Approach:**
+- **Service Ownership**: Each team owns their build, deploy, and scaling
+- **Independent Development**: Services can be developed and deployed separately
+- **Standard Industry Practice**: Follows microservices best practices
+- **Clear Separation**: Infrastructure vs application concerns
+- **Flexibility**: Different services can use different technologies/databases
+- **CI/CD Friendly**: Each service has its own pipeline and deployment cycle
+
+This structure provides complete separation of concerns with each microservice in its own repository managing its own lifecycle, while platform-infrastructure focuses solely on shared components and contracts.
+
+
+1. User Request → Ingress Controller (Load Balancer)
+2. Ingress → Kong API Gateway (Rate Limiting + Load Balancing)  
+3. Kong → submission-service (ClusterIP Service Load Balancing)
+4. Service → Available submission-service pod (Round-Robin)
+5. Pod processes request → Publishes to Kafka
+6. Kafka → build-service pods (Auto-scaled based on queue depth)
+7. Build complete → execution-service pods (Auto-scaled for burst)

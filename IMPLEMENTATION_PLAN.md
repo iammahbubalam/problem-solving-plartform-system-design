@@ -1,103 +1,878 @@
-# 🚀 COMPETITIVE PROGRAMMING PLATFORM - IMPLEMENTATION ROADMAP
+# 🚀 COMPETITIVE PROGRAMMING PLATFORM - DETAILED IMPLEMENTATION ROADMAP
 
-## 📁 **SEPARATE REPOSITORY STRUCTURE**
+## 📋 **PROJECT OVERVIEW**
 
-Each microservice will be its own Git repository:
+**Platform Architecture:** 9 Microservices + Platform Infrastructure
+**Tech Stack:** Java Spring Boot, PostgreSQL, MongoDB, Redis, Kafka, Kubernetes, Kong Gateway
+**Deployment:** Kubernetes with auto-scaling, Git submodules approach
+**Contract Management:** gRPC with Maven artifacts
+
+---
+
+## 📁 **REPOSITORY STRUCTURE & DEPENDENCIES**
 
 ```
-📦 Individual Repositories:
-├── auth-service/              (Repository: auth-service)
-├── user-service/              (Repository: user-service)  
-├── problem-service/           (Repository: problem-service)
-├── testcase-service/          (Repository: testcase-service)
-├── submission-service/        (Repository: submission-service)
-├── build-service/             (Repository: build-service)
-├── execution-service/         (Repository: execution-service)
-├── contest-service/           (Repository: contest-service)
-├── notification-service/     (Repository: notification-service)
-├── shared-contracts/          (Repository: shared-contracts)
-└── platform-infrastructure/  (Repository: platform-infrastructure)
+📦 Repository Organization:
+├── auth-service/              → Core authentication & authorization
+├── user-service/              → User profiles, statistics, leaderboards  
+├── problem-service/           → Problem management & search
+├── testcase-service/          → Test case storage & validation
+├── submission-service/        → Code submission handling
+├── build-service/             → Multi-language compilation
+├── execution-service/         → Sandboxed code execution
+├── contest-service/           → Contest management & scoring
+├── notification-service/      → Multi-channel notifications
+└── platform-infrastructure/  → Shared components & scaling configs
+    ├── services/ (git submodules)
+    ├── shared-contracts/
+    ├── shared-infrastructure/
+    ├── scaling/
+    └── deployment/
+```
+
+**🔄 Service Dependencies:**
+```
+auth-service (FOUNDATION)
+    ↓
+user-service → problem-service → testcase-service
+    ↓              ↓               ↓
+submission-service ← ← ← ← ← ← ← ← ← ← ←
+    ↓
+build-service
+    ↓
+execution-service
+    ↓
+contest-service ← user-service, problem-service
+notification-service (cross-cutting)
 ```
 
 ---
 
 ## 🗓️ **PHASE-WISE IMPLEMENTATION PLAN**
 
-### **🎯 PHASE 1: Foundation & Core Services (Weeks 1-4)**
+### **🎯 PHASE 1: Foundation Setup (Weeks 1-2)**
 
-#### **Week 1: Project Setup & Infrastructure**
+#### **Week 1: Infrastructure & Contracts Foundation**
 
-**Day 1-2: Setup Development Environment**
-1. Create separate Git repositories for each service
-2. Setup shared-contracts repository (gRPC proto files, common DTOs)
-3. Setup platform-infrastructure repository (K8s manifests, Helm charts)
-4. Install development tools (Docker, Java 21, Maven/Gradle, IntelliJ IDEA)
+**🏗️ Day 1-2: Platform Infrastructure Setup**
+```bash
+# Create platform-infrastructure repository
+platform-infrastructure/
+├── shared-contracts/
+│   ├── proto/
+│   │   ├── auth/auth.proto, token.proto
+│   │   ├── user/user.proto, profile.proto
+│   │   ├── problem/problem.proto, search.proto
+│   │   ├── testcase/testcase.proto
+│   │   ├── submission/submission.proto
+│   │   ├── build/build.proto
+│   │   ├── execution/execution.proto
+│   │   ├── contest/contest.proto
+│   │   ├── notification/notification.proto
+│   │   └── common/error-codes.proto, pagination.proto
+│   ├── scripts/
+│   │   ├── generate-contracts.sh
+│   │   ├── publish-contracts.sh
+│   │   └── update-version.sh
+│   └── pom.xml
+├── shared-infrastructure/
+│   ├── kong/ (API Gateway configs)
+│   ├── kafka/ (Message broker configs)
+│   ├── databases/ (PostgreSQL, MongoDB, Redis, Elasticsearch)
+│   └── monitoring/ (Prometheus, Grafana, Jaeger)
+└── deployment/
+    ├── docker-compose.yml (local development)
+    └── kubernetes/ (K8s manifests)
+```
 
-**Day 3-4: Infrastructure Foundation**
-1. Setup local Docker environment
-2. Create Docker Compose for local development
-3. Setup PostgreSQL, MongoDB, Redis, Kafka locally
-4. Create base Spring Boot templates
+**📝 Tasks:**
+- [ ] Create gRPC proto definitions for all services
+- [ ] Setup Maven artifact publishing for contracts
+- [ ] Create Docker Compose for local development environment
+- [ ] Setup shared database schemas and configurations
+- [ ] Configure Kong API Gateway routing rules
 
-**Day 5-7: Shared Components**
-1. Create shared-contracts with gRPC proto definitions
-2. Setup common security configurations
-3. Create shared DTOs and error handling
-4. Setup logging and monitoring configurations
+**🎯 Day 3-4: Development Environment Setup**
+```bash
+# Local development stack
+docker-compose.yml includes:
+- PostgreSQL (auth, user, problem, testcase, submission data)
+- MongoDB (contest analytics, logs)  
+- Redis (sessions, caching, leaderboards)
+- Kafka (async messaging between services)
+- Elasticsearch (problem search)
+- Kong (API Gateway)
+```
 
-#### **Week 2: Core Authentication System**
+**📝 Tasks:**
+- [ ] Setup PostgreSQL with separate databases per service
+- [ ] Configure MongoDB for analytics and logging
+- [ ] Setup Redis clusters for caching and sessions
+- [ ] Configure Kafka topics for inter-service communication
+- [ ] Setup Elasticsearch with problem search mappings
+- [ ] Create base Spring Boot template with common dependencies
 
-**Priority: auth-service (CRITICAL PATH)**
-1. Implement JWT-based authentication
-2. Setup OAuth2 integration (Google, GitHub)
-3. Implement role-based access control (RBAC)
-4. Setup Redis for session management
-5. Create gRPC endpoints for token validation
-6. Unit and integration tests
+**🎯 Day 5-7: Shared Components & Standards**
 
-#### **Week 3: User Management**
+**📝 Tasks:**
+- [ ] Create common security configurations (JWT, OAuth2)
+- [ ] Setup shared exception handling and error codes
+- [ ] Configure distributed tracing with Jaeger
+- [ ] Setup centralized logging with structured logs
+- [ ] Create common DTOs and validation annotations
+- [ ] Setup code quality tools (SonarQube, Checkstyle)
 
-**Priority: user-service**
-1. User registration and profile management
-2. Integration with auth-service for authentication
-3. User statistics and progress tracking
-4. Leaderboard functionality with Redis
-5. User preferences and settings
-6. Integration tests with auth-service
+#### **Week 2: Core Authentication Foundation**
 
-#### **Week 4: Problem Management**
+**🔐 auth-service Implementation (CRITICAL PATH)**
 
-**Priority: problem-service**
-1. Problem CRUD operations
-2. Problem categorization and tagging
-3. Elasticsearch integration for search
-4. Problem difficulty rating system
-5. Admin tools for problem management
-6. Integration with testcase-service
+**🎯 Day 1-3: Core Authentication**
+```java
+// Key Components to Implement:
+src/main/java/com/platform/auth/
+├── controller/
+│   ├── AuthController.java         → /login, /logout, /refresh
+│   ├── OAuth2Controller.java       → /oauth2/google, /oauth2/github  
+│   └── TokenController.java        → /validate, /revoke
+├── service/
+│   ├── AuthService.java            → Core authentication logic
+│   ├── JwtService.java             → Token generation/validation
+│   ├── OAuth2Service.java          → OAuth2 provider integration
+│   └── SessionService.java         → Redis session management
+├── repository/
+│   ├── UserRepository.java         → JPA repository for users
+│   └── SessionRepository.java      → Redis repository for sessions
+├── model/
+│   ├── User.java                   → User entity with roles
+│   ├── Role.java                   → Role-based access control
+│   ├── Permission.java             → Fine-grained permissions
+│   └── Session.java                → Session tracking
+└── grpc/
+    ├── AuthGrpcService.java        → gRPC service for inter-service auth
+    └── TokenValidationService.java → Token validation for other services
+```
+
+**📝 Implementation Tasks:**
+- [ ] Implement JWT token generation with RS256 algorithm
+- [ ] Setup OAuth2 integration with Google and GitHub
+- [ ] Create role-based access control (USER, ADMIN, CONTEST_CREATOR)
+- [ ] Implement Redis-based session management
+- [ ] Create gRPC service for token validation by other services
+- [ ] Setup password hashing with BCrypt
+- [ ] Implement account lockout and rate limiting
+- [ ] Create comprehensive unit and integration tests
+
+**🎯 Day 4-5: Database Design & Security**
+```sql
+-- Database Schema (PostgreSQL)
+-- V1__Create_users_table.sql
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    is_email_verified BOOLEAN DEFAULT FALSE,
+    failed_login_attempts INTEGER DEFAULT 0,
+    account_locked_until TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- V2__Create_roles_table.sql
+CREATE TABLE roles (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- V3__Create_user_roles_table.sql
+CREATE TABLE user_roles (
+    user_id BIGINT REFERENCES users(id),
+    role_id BIGINT REFERENCES roles(id),
+    PRIMARY KEY (user_id, role_id)
+);
+```
+
+**📝 Tasks:**
+- [ ] Design and implement user authentication database schema
+- [ ] Setup Flyway migrations for database versioning
+- [ ] Configure JPA entities with proper relationships
+- [ ] Implement secure password policies and validation
+- [ ] Setup Redis for session storage with TTL
+
+**🎯 Day 6-7: Testing & Documentation**
+
+**📝 Tasks:**
+- [ ] Create comprehensive unit tests (80%+ coverage)
+- [ ] Implement integration tests with TestContainers
+- [ ] Setup Swagger/OpenAPI documentation
+- [ ] Create Docker image with health checks
+- [ ] Document gRPC service contracts
+- [ ] Setup CI/CD pipeline with GitHub Actions
 
 ---
 
-### **🎯 PHASE 2: Core Functionality (Weeks 5-8)**
+### **🎯 PHASE 2: Core Services (Weeks 3-6)**
+
+#### **Week 3: User Management Service**
+
+**👤 user-service Implementation**
+
+**🎯 Day 1-2: User Profile Management**
+```java
+// Key Components:
+src/main/java/com/platform/user/
+├── controller/
+│   ├── UserController.java         → CRUD operations, profile updates
+│   ├── ProfileController.java      → Extended profile management
+│   ├── LeaderboardController.java  → Rankings and statistics
+│   └── StatisticsController.java   → User performance analytics
+├── service/
+│   ├── UserService.java            → Core user operations
+│   ├── ProfileService.java         → Profile picture, bio, preferences
+│   ├── LeaderboardService.java     → Redis-based rankings
+│   ├── StatisticsService.java      → Performance calculations
+│   └── UserSearchService.java      → User search functionality
+├── repository/
+│   ├── UserRepository.java         → User data persistence
+│   ├── ProfileRepository.java      → Extended profile data
+│   ├── StatisticsRepository.java   → Performance metrics
+│   └── LeaderboardRepository.java  → Redis operations for rankings
+└── kafka/
+    ├── UserEventProducer.java      → Publish user events
+    └── UserEventConsumer.java      → Handle external user events
+```
+
+**📝 Implementation Tasks:**
+- [ ] Implement user profile CRUD operations
+- [ ] Create user statistics tracking (problems solved, success rate)
+- [ ] Implement Redis-based leaderboard with sorted sets
+- [ ] Setup user preferences and settings management
+- [ ] Create user search functionality with Elasticsearch
+- [ ] Implement avatar upload with file storage
+- [ ] Setup Kafka event publishing for user activities
+
+**🎯 Day 3-4: Statistics & Leaderboards**
+```java
+// Statistics calculation logic
+@Service
+public class StatisticsService {
+    // Calculate user performance metrics
+    public UserStatistics calculateStatistics(Long userId) {
+        // Problems solved, success rate, difficulty distribution
+        // Contest performance, submission patterns
+        // Language preferences, time spent coding
+    }
+    
+    // Update leaderboards in Redis
+    public void updateLeaderboards(Long userId, StatisticsUpdate update) {
+        // Global leaderboard
+        // Monthly leaderboard  
+        // Contest-specific leaderboards
+    }
+}
+```
+
+**📝 Tasks:**
+- [ ] Implement real-time statistics calculation
+- [ ] Create Redis-based leaderboard system
+- [ ] Setup user achievement system
+- [ ] Implement user activity tracking
+- [ ] Create user comparison features
+
+**🎯 Day 5-7: Testing & Integration**
+
+**📝 Tasks:**
+- [ ] Integration testing with auth-service
+- [ ] Redis integration testing for leaderboards
+- [ ] Kafka integration testing for events
+- [ ] Performance testing for statistics calculations
+- [ ] Setup monitoring and metrics collection
+
+#### **Week 4: Problem Management Service**
+
+**📝 problem-service Implementation**
+
+**🎯 Day 1-3: Problem Management**
+```java
+// Key Components:
+src/main/java/com/platform/problem/
+├── controller/
+│   ├── ProblemController.java      → CRUD, search, filtering
+│   ├── CategoryController.java     → Problem categorization
+│   ├── TagController.java          → Tag management
+│   └── SearchController.java       → Advanced search with filters
+├── service/
+│   ├── ProblemService.java         → Core problem operations
+│   ├── CategoryService.java        → Category management
+│   ├── TagService.java             → Tag operations
+│   ├── SearchService.java          → Elasticsearch integration
+│   └── DifficultyService.java      → Difficulty calculation algorithm
+├── repository/
+│   ├── ProblemRepository.java      → PostgreSQL operations
+│   ├── CategoryRepository.java     → Category data
+│   ├── TagRepository.java          → Tag management
+│   └── elasticsearch/
+│       └── ProblemSearchRepository.java → Search operations
+└── grpc/
+    ├── ProblemGrpcService.java     → Inter-service problem access
+    └── ProblemValidationService.java → Problem validation
+```
+
+**📝 Implementation Tasks:**
+- [ ] Implement problem CRUD with rich text editor support
+- [ ] Create problem categorization system (Arrays, Graphs, DP, etc.)
+- [ ] Setup tag system for flexible problem classification
+- [ ] Implement Elasticsearch integration for advanced search
+- [ ] Create difficulty rating algorithm based on submissions
+- [ ] Setup problem versioning and edit history
+- [ ] Implement problem approval workflow for admin
+
+**🎯 Day 4-5: Search & Discovery**
+```java
+// Elasticsearch mapping for problems
+{
+  "mappings": {
+    "properties": {
+      "title": { "type": "text", "analyzer": "standard" },
+      "description": { "type": "text", "analyzer": "standard" },
+      "tags": { "type": "keyword" },
+      "difficulty": { "type": "integer" },
+      "category": { "type": "keyword" },
+      "success_rate": { "type": "float" },
+      "created_at": { "type": "date" }
+    }
+  }
+}
+```
+
+**📝 Tasks:**
+- [ ] Setup Elasticsearch problem indexing
+- [ ] Implement advanced search with filters
+- [ ] Create problem recommendation system
+- [ ] Setup search analytics and trending problems
+- [ ] Implement problem similarity detection
+
+**🎯 Day 6-7: Integration & Testing**
+
+**📝 Tasks:**
+- [ ] Integration with testcase-service
+- [ ] Performance testing for search operations
+- [ ] Load testing for high-volume problem access
+- [ ] Setup caching strategy with Redis
 
 #### **Week 5: Test Case Management**
 
-**Priority: testcase-service**
-1. Secure test case storage and encryption
-2. Test case validation and format checking
-3. Sample test case generation
-4. Integration with problem-service
-5. Batch test case operations
-6. Performance optimization for large datasets
+**🧪 testcase-service Implementation**
 
-#### **Week 6: Submission System**
+**🎯 Day 1-3: Secure Test Case Storage**
+```java
+// Key Components:
+src/main/java/com/platform/testcase/
+├── controller/
+│   ├── TestcaseController.java     → CRUD operations
+│   ├── SampleTestcaseController.java → Public test cases
+│   └── ValidationController.java   → Test case validation
+├── service/
+│   ├── TestcaseService.java        → Core operations
+│   ├── EncryptionService.java      → AES-256 encryption
+│   ├── ValidationService.java      → Format validation
+│   └── TestcaseGeneratorService.java → Auto-generation
+├── model/
+│   ├── Testcase.java               → Encrypted test cases
+│   ├── SampleTestcase.java         → Public examples
+│   ├── TestcaseGroup.java          → Grouped test cases
+│   └── ValidationResult.java       → Validation outcomes
+└── grpc/
+    ├── TestcaseGrpcService.java    → Inter-service access
+    └── TestcaseValidationService.java
+```
 
-**Priority: submission-service**
-1. Code submission handling and validation
-2. Programming language detection
-3. Submission queue management with Kafka
-4. Integration with auth-service and user-service
-5. Submission history and analytics
-6. Real-time submission status updates
+**📝 Implementation Tasks:**
+- [ ] Implement AES-256 encryption for hidden test cases
+- [ ] Create test case validation (input/output format)
+- [ ] Setup test case grouping and batching
+- [ ] Implement automatic test case generation
+- [ ] Create sample test case management
+- [ ] Setup test case versioning and rollback
+- [ ] Implement bulk test case operations
+
+**🎯 Day 4-5: Validation & Generation**
+
+**📝 Tasks:**
+- [ ] Implement input/output format validation
+- [ ] Create test case strength analysis
+- [ ] Setup automated edge case generation
+- [ ] Implement test case optimization
+- [ ] Create test case coverage analysis
+
+**🎯 Day 6-7: Security & Integration**
+
+**📝 Tasks:**
+- [ ] Security audit for test case encryption
+- [ ] Integration testing with problem-service
+- [ ] Performance testing for large test case sets
+- [ ] Setup monitoring for test case operations
+
+#### **Week 6: Submission Management**
+
+**📤 submission-service Implementation**
+
+**🎯 Day 1-3: Submission Handling**
+```java
+// Key Components:
+src/main/java/com/platform/submission/
+├── controller/
+│   ├── SubmissionController.java   → Submit code, get results
+│   ├── SubmissionHistoryController.java → User submission history
+│   └── SubmissionStatusController.java → Real-time status
+├── service/
+│   ├── SubmissionService.java      → Core submission logic
+│   ├── CodeValidationService.java  → Syntax and format validation
+│   ├── LanguageDetectionService.java → Auto-detect programming language
+│   ├── QueueService.java           → Kafka queue management
+│   └── StatusService.java          → Status tracking and updates
+├── kafka/
+│   ├── SubmissionEventProducer.java → Send to build service
+│   ├── BuildEventConsumer.java     → Receive build results
+│   └── ExecutionEventConsumer.java → Receive execution results
+└── websocket/
+    ├── SubmissionStatusHandler.java → Real-time status updates
+    └── WebSocketEventPublisher.java
+```
+
+**📝 Implementation Tasks:**
+- [ ] Implement code submission with multiple language support
+- [ ] Create submission validation and sanitization
+- [ ] Setup Kafka integration for asynchronous processing
+- [ ] Implement real-time status updates via WebSocket
+- [ ] Create submission history and analytics
+- [ ] Setup submission rate limiting per user
+- [ ] Implement plagiarism detection basics
+
+**🎯 Day 4-5: Queue Management & Real-time Updates**
+
+**📝 Tasks:**
+- [ ] Setup Kafka topic partitioning for scalability
+- [ ] Implement submission priority queuing
+- [ ] Create WebSocket connections for real-time updates
+- [ ] Setup submission retry mechanism
+- [ ] Implement submission cancellation
+
+**🎯 Day 6-7: Analytics & Testing**
+
+**📝 Tasks:**
+- [ ] Create submission analytics and patterns
+- [ ] Setup integration testing with auth and user services
+- [ ] Performance testing for high-volume submissions
+- [ ] Load testing for concurrent submissions
+
+---
+
+### **🎯 PHASE 3: Processing Pipeline (Weeks 7-10)**
+
+#### **Week 7: Build Service**
+
+**🔨 build-service Implementation**
+
+**🎯 Day 1-3: Multi-Language Compilation**
+```java
+// Key Components:
+src/main/java/com/platform/build/
+├── controller/
+│   ├── BuildController.java        → Build management
+│   ├── BuildHistoryController.java → Build history
+│   └── BuildStatusController.java  → Build status tracking
+├── service/
+│   ├── BuildService.java           → Core build orchestration
+│   ├── CompilerService.java        → Language-specific compilation
+│   ├── DockerService.java          → Docker container management
+│   └── ResourceMonitoringService.java → Resource usage tracking
+├── compiler/
+│   ├── JavaCompiler.java           → javac integration
+│   ├── PythonCompiler.java         → Python validation
+│   ├── CppCompiler.java            → g++ compilation
+│   ├── JavaScriptRunner.java       → Node.js setup
+│   └── CompilerFactory.java        → Compiler selection
+└── kafka/
+    ├── SubmissionEventConsumer.java → Receive submissions
+    └── BuildEventProducer.java      → Send build results
+```
+
+**🔧 Compiler Configuration:**
+```yaml
+# compiler-configs/java.yml
+compiler:
+  image: "openjdk:17-alpine"
+  compile_command: "javac -cp /tmp/libs/* {source_file}"
+  run_command: "java -cp /tmp/classes:/tmp/libs/* {main_class}"
+  memory_limit: "512MB"
+  time_limit: "30s"
+  
+# compiler-configs/cpp.yml  
+compiler:
+  image: "gcc:11-alpine"
+  compile_command: "g++ -std=c++17 -O2 -o {output} {source_file}"
+  run_command: "./{output}"
+  memory_limit: "256MB"
+  time_limit: "10s"
+```
+
+**📝 Implementation Tasks:**
+- [ ] Implement Docker-based compilation environments
+- [ ] Create language-specific compiler configurations
+- [ ] Setup build artifact caching for performance
+- [ ] Implement resource monitoring and limits
+- [ ] Create build error parsing and reporting
+- [ ] Setup build queue with priority handling
+- [ ] Implement compilation timeout handling
+
+**🎯 Day 4-5: Docker Integration & Resource Management**
+
+**📝 Tasks:**
+- [ ] Setup secure Docker environments for each language
+- [ ] Implement resource limits (CPU, memory, disk)
+- [ ] Create build artifact cleanup automation
+- [ ] Setup container image optimization
+- [ ] Implement build caching strategies
+
+**🎯 Day 6-7: Performance & Testing**
+
+**📝 Tasks:**
+- [ ] Performance optimization for build speed
+- [ ] Integration testing with submission-service
+- [ ] Load testing for concurrent builds
+- [ ] Security testing for Docker isolation
+
+#### **Week 8: Execution Service**
+
+**⚡ execution-service Implementation**
+
+**🎯 Day 1-4: Sandboxed Execution**
+```java
+// Key Components:
+src/main/java/com/platform/execution/
+├── controller/
+│   ├── ExecutionController.java    → Execution management
+│   ├── ExecutionHistoryController.java
+│   └── ExecutionStatusController.java
+├── service/
+│   ├── ExecutionService.java       → Core execution logic
+│   ├── SandboxService.java         → Security and isolation
+│   ├── ResourceLimitService.java   → CPU/Memory limits
+│   ├── ResultComparisonService.java → Output comparison
+│   └── PerformanceService.java     → Performance metrics
+├── sandbox/
+│   ├── DockerSandbox.java          → Docker-based isolation
+│   ├── ContainerManager.java       → Container lifecycle
+│   └── SecurityPolicy.java         → Security constraints
+├── executor/
+│   ├── CodeExecutor.java           → Code execution logic
+│   ├── TestCaseRunner.java         → Test case execution
+│   └── ResultAnalyzer.java         → Result analysis
+└── kafka/
+    ├── BuildEventConsumer.java     → Receive built code
+    └── ExecutionEventProducer.java → Send execution results
+```
+
+**🔒 Security Configuration:**
+```yaml
+# sandbox-policies/default.yml
+security:
+  max_memory: "128MB"
+  max_cpu_time: "2s"
+  max_wall_time: "5s"
+  max_file_size: "1MB"
+  max_open_files: 64
+  network_access: false
+  allowed_syscalls:
+    - read, write, open, close
+    - mmap, munmap, brk
+    - exit, exit_group
+  denied_syscalls:
+    - socket, bind, connect
+    - execve, fork, clone
+    - chmod, chown
+```
+
+**📝 Implementation Tasks:**
+- [ ] Implement secure Docker-based code execution
+- [ ] Create comprehensive security policies
+- [ ] Setup resource monitoring and enforcement
+- [ ] Implement accurate result comparison algorithms
+- [ ] Create performance metrics collection
+- [ ] Setup execution timeout handling
+- [ ] Implement memory and CPU usage tracking
+
+**🎯 Day 5-6: Result Analysis & Comparison**
+
+**📝 Tasks:**
+- [ ] Implement fuzzy output comparison for floating-point
+- [ ] Create whitespace-tolerant comparison algorithms
+- [ ] Setup partial scoring for test cases
+- [ ] Implement execution analytics and patterns
+- [ ] Create execution failure categorization
+
+**🎯 Day 7: Testing & Optimization**
+
+**📝 Tasks:**
+- [ ] Security testing for sandbox escape attempts
+- [ ] Performance testing for execution speed
+- [ ] Integration testing with build-service
+- [ ] Load testing for concurrent executions
+
+#### **Week 9: Advanced Pipeline Integration**
+
+**🔄 Complete Pipeline Testing**
+
+**🎯 Day 1-3: End-to-End Integration**
+
+**📝 Tasks:**
+- [ ] Complete submission → build → execution → result pipeline
+- [ ] Integration testing across all services
+- [ ] Performance testing for complete workflow
+- [ ] Error handling and recovery testing
+- [ ] Queue backpressure handling
+
+**🎯 Day 4-5: Performance Optimization**
+
+**📝 Tasks:**
+- [ ] Pipeline performance optimization
+- [ ] Resource usage optimization
+- [ ] Caching strategy implementation
+- [ ] Auto-scaling configuration testing
+
+**🎯 Day 6-7: Monitoring & Alerting**
+
+**📝 Tasks:**
+- [ ] Setup comprehensive monitoring for pipeline
+- [ ] Create alerting for pipeline failures
+- [ ] Implement performance metrics collection
+- [ ] Setup distributed tracing for requests
+
+#### **Week 10: Contest & Notification Services**
+
+**🏆 contest-service Implementation**
+
+**🎯 Day 1-4: Contest Management**
+```java
+// Key Components:
+src/main/java/com/platform/contest/
+├── controller/
+│   ├── ContestController.java      → Contest CRUD
+│   ├── LeaderboardController.java  → Real-time rankings
+│   ├── ParticipationController.java → User participation
+│   └── ContestAnalyticsController.java
+├── service/
+│   ├── ContestService.java         → Contest management
+│   ├── LeaderboardService.java     → Real-time leaderboards
+│   ├── ScoringService.java         → Scoring algorithms
+│   ├── SchedulingService.java      → Contest scheduling
+│   └── AnalyticsService.java       → Contest analytics
+├── scoring/
+│   ├── ScoringAlgorithm.java       → Base scoring interface
+│   ├── ICPCScoring.java            → ICPC-style scoring
+│   └── CodeforceScoring.java       → Codeforces-style scoring
+└── websocket/
+    ├── LeaderboardWebSocketHandler.java
+    ├── ContestUpdatesHandler.java
+    └── WebSocketEventPublisher.java
+```
+
+**🔔 notification-service Implementation**
+
+**🎯 Day 5-7: Multi-Channel Notifications**
+```java
+// Key Components:
+src/main/java/com/platform/notification/
+├── controller/
+│   ├── NotificationController.java
+│   ├── TemplateController.java
+│   └── PreferenceController.java
+├── service/
+│   ├── NotificationService.java
+│   ├── EmailService.java           → SMTP integration
+│   ├── SmsService.java             → SMS provider integration
+│   ├── PushNotificationService.java → Push notifications
+│   ├── TemplateService.java        → Template management
+│   └── PreferenceService.java      → User preferences
+├── providers/
+│   ├── EmailProvider.java          → SendGrid/AWS SES
+│   ├── SmsProvider.java            → Twilio integration
+│   ├── PushProvider.java           → Firebase FCM
+│   └── WebSocketProvider.java      → Real-time notifications
+└── rabbitmq/
+    ├── NotificationConsumer.java
+    └── DeadLetterHandler.java
+```
+
+---
+
+### **🎯 PHASE 4: Platform Infrastructure & Scaling (Weeks 11-12)**
+
+#### **Week 11: Infrastructure Automation**
+
+**🏗️ Platform Infrastructure Completion**
+
+**🎯 Day 1-3: Kubernetes Setup**
+```yaml
+# scaling/global/default-hpa-template.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {SERVICE_NAME}-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {SERVICE_NAME}
+  minReplicas: 2
+  maxReplicas: 50
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+```
+
+**📝 Tasks:**
+- [ ] Complete Kubernetes deployment manifests for all services
+- [ ] Setup Horizontal Pod Autoscaling (HPA) for each service
+- [ ] Implement Vertical Pod Autoscaling (VPA) for resource optimization
+- [ ] Configure environment-specific scaling policies
+- [ ] Setup centralized configuration management
+- [ ] Implement secret management with Kubernetes secrets
+
+**🎯 Day 4-5: API Gateway & Load Balancing**
+
+**📝 Tasks:**
+- [ ] Complete Kong API Gateway configuration
+- [ ] Setup rate limiting and throttling policies
+- [ ] Implement API versioning and routing
+- [ ] Configure load balancing algorithms
+- [ ] Setup SSL/TLS termination
+- [ ] Implement CORS and security headers
+
+**🎯 Day 6-7: Monitoring & Observability**
+
+**📝 Tasks:**
+- [ ] Deploy Prometheus for metrics collection
+- [ ] Setup Grafana dashboards for all services
+- [ ] Configure Jaeger for distributed tracing
+- [ ] Setup centralized logging with ELK stack
+- [ ] Implement health checks and readiness probes
+- [ ] Create alerting rules and notification channels
+
+#### **Week 12: Production Deployment & Testing**
+
+**🚀 Production Readiness**
+
+**🎯 Day 1-3: Production Deployment**
+
+**📝 Tasks:**
+- [ ] Setup production Kubernetes cluster
+- [ ] Configure production databases with backup strategies
+- [ ] Deploy monitoring and logging infrastructure
+- [ ] Setup CI/CD pipelines for all services
+- [ ] Configure environment-specific settings
+- [ ] Implement database migration strategies
+
+**🎯 Day 4-5: Performance Testing**
+
+**📝 Tasks:**
+- [ ] Load testing for individual services
+- [ ] End-to-end performance testing
+- [ ] Stress testing for peak load scenarios
+- [ ] Scalability testing with auto-scaling
+- [ ] Database performance optimization
+- [ ] Cache performance validation
+
+**🎯 Day 6-7: Security & Compliance**
+
+**📝 Tasks:**
+- [ ] Security vulnerability scanning
+- [ ] Penetration testing for all endpoints
+- [ ] GDPR compliance validation
+- [ ] API security testing
+- [ ] Container security scanning
+- [ ] Network security validation
+
+---
+
+## 📊 **SUCCESS METRICS & MILESTONES**
+
+### **Phase 1 Success Criteria (Week 2):**
+- [ ] All repository structures created with proper Git submodules
+- [ ] gRPC contracts published and consumable via Maven
+- [ ] Local development environment fully functional
+- [ ] auth-service providing JWT tokens and validation
+- [ ] Docker Compose stack running all infrastructure components
+
+### **Phase 2 Success Criteria (Week 6):**
+- [ ] All core services (auth, user, problem, testcase, submission) functional
+- [ ] Inter-service communication working via gRPC
+- [ ] Database schemas implemented with proper migrations
+- [ ] Basic API endpoints responding correctly
+- [ ] Unit test coverage >80% for all services
+
+### **Phase 3 Success Criteria (Week 10):**
+- [ ] Complete submission pipeline working (submit → build → execute → result)
+- [ ] Contest system fully functional with real-time leaderboards
+- [ ] Notification system sending multi-channel notifications
+- [ ] All services integrated and communicating properly
+- [ ] Performance benchmarks met (>1000 concurrent submissions)
+
+### **Phase 4 Success Criteria (Week 12):**
+- [ ] Production deployment successful on Kubernetes
+- [ ] Auto-scaling working for all services
+- [ ] Monitoring and alerting fully operational
+- [ ] Security audit passed
+- [ ] Load testing targets achieved (10K+ concurrent users)
+
+---
+
+## 🎯 **IMMEDIATE NEXT STEPS**
+
+### **Week 1 Priority Actions:**
+
+1. **🏗️ Setup platform-infrastructure repository**
+   ```bash
+   # Create the foundation repository first
+   git clone https://github.com/your-org/platform-infrastructure.git
+   cd platform-infrastructure
+   git submodule add https://github.com/your-org/auth-service.git services/auth-service
+   # Add all other services as submodules
+   ```
+
+2. **📝 Create gRPC contracts**
+   ```bash
+   # shared-contracts/proto/auth/auth.proto
+   # shared-contracts/proto/user/user.proto
+   # ... all other service contracts
+   ```
+
+3. **🐳 Setup local development environment**
+   ```bash
+   # deployment/docker-compose.yml with all infrastructure
+   docker-compose up -d
+   ```
+
+4. **🔐 Begin auth-service implementation**
+   ```bash
+   # Start with the critical path service
+   # All other services depend on authentication
+   ```
+
+This implementation plan provides a detailed roadmap for building your competitive programming platform with proper microservices architecture, scaling considerations, and production deployment strategy.
 
 #### **Week 7: Build System**
 
