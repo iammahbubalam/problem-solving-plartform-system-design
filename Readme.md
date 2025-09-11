@@ -64,10 +64,10 @@ A high-performance competitive programming platform designed to handle **1M+ con
 ### Message Queue Strategy Distribution
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    MESSAGE QUEUE USAGE                          │
-│                                                                 │
-│  Apache Kafka: High-volume event streaming                     │
-│  ├── Submission events (25K/min)                               │
+│                    MESSAGE QUEUE USAGE                                      │
+│                                                                             │
+│  Apache Kafka: High-volume event streaming                                  │
+│  ├── Submission events (25K/min)                                            │
 │  ├── User activity events (100K/min)                           │
 │  └── Contest events (50K/min)                                  │
 │                                                                 │
