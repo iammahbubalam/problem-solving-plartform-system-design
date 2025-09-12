@@ -64,14 +64,7 @@ auth-service/
 └── README.md
 ```
 
-**📦 pom.xml includes:**
-```xml
-<dependency>
-    <groupId>com.platform</groupId>
-    <artifactId>platform-contracts</artifactId>
-    <version>${contracts.version}</version>
-</dependency>
-```
+
 
 **🐳 Dockerfile example:**
 ```dockerfile
