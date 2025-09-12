@@ -37,6 +37,9 @@ auth-service/
 │   │   │       ├── AuthException.java
 │   │   │       ├── TokenExpiredException.java
 │   │   │       └── InvalidCredentialsException.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   ├── auth.proto
+│   │   │   └── token.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
@@ -124,6 +127,9 @@ user-service/
 │   │   │   └── kafka/
 │   │   │       ├── UserEventProducer.java
 │   │   │       └── UserEventConsumer.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   ├── user.proto
+│   │   │   └── profile.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
@@ -180,6 +186,9 @@ problem-service/
 │   │   │   └── grpc/
 │   │   │       ├── ProblemGrpcService.java
 │   │   │       └── ProblemValidationService.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   ├── problem.proto
+│   │   │   └── search.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       ├── elasticsearch/
@@ -232,6 +241,8 @@ testcase-service/
 │   │   │   └── grpc/
 │   │   │       ├── TestcaseGrpcService.java
 │   │   │       └── TestcaseValidationService.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   └── testcase.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
@@ -287,6 +298,8 @@ submission-service/
 │   │   │   └── websocket/
 │   │   │       ├── SubmissionStatusHandler.java
 │   │   │       └── WebSocketEventPublisher.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   └── submission.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
@@ -344,6 +357,8 @@ build-service/
 │   │   │       ├── CppCompiler.java
 │   │   │       ├── JavaScriptRunner.java
 │   │   │       └── CompilerFactory.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   └── build.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── compiler-configs/
@@ -405,6 +420,8 @@ execution-service/
 │   │   │       ├── CodeExecutor.java
 │   │   │       ├── TestCaseRunner.java
 │   │   │       └── ResultAnalyzer.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   └── execution.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── sandbox-policies/
@@ -468,6 +485,8 @@ contest-service/
 │   │   │       ├── ScoringAlgorithm.java
 │   │   │       ├── ICPCScoring.java
 │   │   │       └── CodeforceScoring.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   └── contest.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/
@@ -529,6 +548,8 @@ notification-service/
 │   │   │   └── websocket/
 │   │   │       ├── NotificationWebSocketHandler.java
 │   │   │       └── WebSocketNotificationPublisher.java
+│   │   ├── proto/                          # Service-owned proto files
+│   │   │   └── notification.proto
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       ├── templates/
@@ -573,40 +594,47 @@ platform-infrastructure/
 │   ├── execution-service/                # Submodule -> https://github.com/your-org/execution-service.git
 │   ├── contest-service/                  # Submodule -> https://github.com/your-org/contest-service.git
 │   └── notification-service/             # Submodule -> https://github.com/your-org/notification-service.git
-├── shared-contracts/                     # gRPC contracts and API definitions
-│   ├── proto/
+├── shared-contracts/                     # Proto descriptors and contract management
+│   ├── descriptors/                          # Proto descriptors from all services
 │   │   ├── auth/
-│   │   │   ├── auth.proto
-│   │   │   └── token.proto
+│   │   │   ├── auth.desc                     # Binary descriptor from auth-service
+│   │   │   └── token.desc
 │   │   ├── user/
-│   │   │   ├── user.proto
-│   │   │   └── profile.proto
+│   │   │   ├── user.desc                     # Binary descriptor from user-service
+│   │   │   └── profile.desc
 │   │   ├── problem/
-│   │   │   ├── problem.proto
-│   │   │   └── search.proto
+│   │   │   ├── problem.desc                  # Binary descriptor from problem-service
+│   │   │   └── search.desc
 │   │   ├── testcase/
-│   │   │   └── testcase.proto
+│   │   │   └── testcase.desc                 # Binary descriptor from testcase-service
 │   │   ├── submission/
-│   │   │   └── submission.proto
+│   │   │   └── submission.desc               # Binary descriptor from submission-service
 │   │   ├── build/
-│   │   │   └── build.proto
+│   │   │   └── build.desc                    # Binary descriptor from build-service
 │   │   ├── execution/
-│   │   │   └── execution.proto
+│   │   │   └── execution.desc                # Binary descriptor from execution-service
 │   │   ├── contest/
-│   │   │   └── contest.proto
+│   │   │   └── contest.desc                  # Binary descriptor from contest-service
 │   │   ├── notification/
-│   │   │   └── notification.proto
+│   │   │   └── notification.desc             # Binary descriptor from notification-service
 │   │   └── common/
-│   │       ├── error-codes.proto
-│   │       ├── pagination.proto
-│   │       └── metadata.proto
-│   ├── java/
-│   │   └── generated/
+│   │       ├── error-codes.desc              # Common error definitions
+│   │       ├── pagination.desc               # Common pagination
+│   │       └── metadata.desc                 # Common metadata
+│   ├── registry/                             # Service registry and discovery
+│   │   ├── service-registry.yaml             # gRPC service endpoints
+│   │   └── contract-versions.yaml            # Contract version mapping
+│   ├── generated/                            # Generated contract artifacts
+│   │   ├── java/                             # Generated Java classes
+│   │   ├── typescript/                       # Generated TypeScript (if needed)
+│   │   └── docs/                             # Generated API documentation
 │   ├── scripts/
-│   │   ├── generate-contracts.sh         # Generate Java classes from proto
-│   │   ├── publish-contracts.sh          # Publish to Maven repository
-│   │   └── update-version.sh             # Version management
-│   ├── pom.xml                          # Maven config for publishing contracts
+│   │   ├── collect-descriptors.sh            # Collect descriptors from services
+│   │   ├── generate-contracts.sh             # Generate contract artifacts
+│   │   ├── publish-contracts.sh              # Publish to Maven repository
+│   │   ├── validate-compatibility.sh         # Check backward compatibility
+│   │   └── update-registry.sh                # Update service registry
+│   ├── pom.xml                              # Maven config for publishing contracts
 │   └── README.md
 ├── shared-infrastructure/                 # Shared components only
 │   ├── kong/                             # API Gateway
@@ -767,32 +795,63 @@ platform-infrastructure/
 
 ---
 
-## 🔄 **HOW SERVICES ACCESS SHARED CONTRACTS:**
+## 🔄 **DECENTRALIZED PROTO MANAGEMENT:**
 
-### **📦 Maven Artifact Approach (Recommended):**
+### **📦 Service-Owned Proto Approach (Recommended):**
 
-1. **Platform-Infrastructure publishes contracts:**
-   ```bash
-   cd platform-infrastructure/shared-contracts
-   ./scripts/generate-contracts.sh    # Generate Java from proto
-   ./scripts/publish-contracts.sh     # Publish to Maven repo
-   ```
+**🏗️ Each Service Owns Its Proto Files:**
+```bash
+# Example: auth-service owns its proto files
+auth-service/src/main/resources/proto/
+├── auth.proto          # Authentication service definition
+└── token.proto         # Token validation service definition
 
-2. **Services consume contracts via Maven dependency:**
-   ```xml
-   <!-- In service pom.xml -->
-   <dependency>
-       <groupId>com.platform</groupId>
-       <artifactId>platform-contracts</artifactId>
-       <version>1.0.0</version>
-   </dependency>
-   ```
+# Each service generates its own gRPC classes
+cd auth-service/
+mvn clean compile       # Generates Java classes from proto files
+```
 
-3. **Services import and use:**
-   ```java
-   import com.platform.contracts.auth.AuthServiceGrpc;
-   import com.platform.contracts.user.UserServiceGrpc;
-   ```
+**📋 Platform Infrastructure Collects Descriptors:**
+```bash
+# Platform-infrastructure collects binary descriptors
+cd platform-infrastructure/shared-contracts
+./scripts/collect-descriptors.sh    # Pulls descriptors from all services
+./scripts/generate-contracts.sh     # Generates unified contract library
+./scripts/publish-contracts.sh      # Publishes to Maven repository
+```
+
+**🔄 Contract Update Workflow:**
+1. **Service updates its proto** in `src/main/resources/proto/`
+2. **Service publishes descriptor** to platform-infrastructure
+3. **Platform validates compatibility** with existing contracts
+4. **Platform generates unified library** and publishes new version
+5. **Other services update** to new contract version as needed
+
+### **📦 Maven Dependency Consumption:**
+
+```xml
+<!-- Each service consumes the unified contract library -->
+<dependency>
+    <groupId>com.platform</groupId>
+    <artifactId>platform-contracts</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+```java
+// Services import generated gRPC classes
+import com.platform.contracts.auth.AuthServiceGrpc;
+import com.platform.contracts.user.UserServiceGrpc;
+import com.platform.contracts.problem.ProblemServiceGrpc;
+```
+
+### **🎯 Benefits of Decentralized Proto Management:**
+- **Service Autonomy**: Each service owns and evolves its own API contracts
+- **Faster Development**: No central bottleneck for proto file changes
+- **Better Ownership**: Teams responsible for their service APIs
+- **Version Control**: Clear tracking of which service changed which contract
+- **Backward Compatibility**: Automated validation prevents breaking changes
+- **Selective Updates**: Services can update contracts independently
 
 ---
 
@@ -815,19 +874,21 @@ cd platform-infrastructure/
 ./scripts/deploy-services.sh          # Reference service images from registry
 ```
 
-### **�🔄 Contract Update Workflow:**
-1. **Update contracts** in `platform-infrastructure/shared-contracts/`
-2. **Generate & publish** new version: `./scripts/publish-contracts.sh`
-3. **Update services** to use new version in their `pom.xml`
-4. **Build & deploy services** individually from their repositories
+### **🔄 Contract Update Workflow:**
+1. **Service updates proto** in its own `src/main/resources/proto/` directory
+2. **Service builds and generates descriptor**: `mvn compile` → produces `.desc` file
+3. **Service publishes descriptor** to platform-infrastructure via CI/CD
+4. **Platform validates compatibility** and generates unified contract library
+5. **Platform publishes new version** of platform-contracts artifact
+6. **Other services update** their `pom.xml` to new contract version when ready
 
-### **🎯 Benefits of Standard Approach:**
-- **Service Ownership**: Each team owns their build, deploy, and scaling
-- **Independent Development**: Services can be developed and deployed separately
-- **Standard Industry Practice**: Follows microservices best practices
-- **Clear Separation**: Infrastructure vs application concerns
-- **Flexibility**: Different services can use different technologies/databases
-- **CI/CD Friendly**: Each service has its own pipeline and deployment cycle
+### **🎯 Benefits of Service-Owned Proto Approach:**
+- **Service Autonomy**: Each team controls their API evolution
+- **Faster Development**: No waiting for central proto file approvals
+- **Clear Ownership**: Service teams own their contract definitions
+- **Independent Evolution**: Services evolve APIs at their own pace
+- **Backward Compatibility**: Automated validation prevents breaking changes
+- **Distributed Development**: Multiple teams can work on contracts simultaneously
 
 This structure provides complete separation of concerns with each microservice in its own repository managing its own lifecycle, while platform-infrastructure focuses solely on shared components and contracts.
 
